@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import net.devstudy.framework.annotation.jdbc.Column;
+import net.devstudy.framework.annotation.jdbc.Table;
 
 /**
  * 
@@ -11,6 +12,7 @@ import net.devstudy.framework.annotation.jdbc.Column;
  * @see http://devstudy.net
  */
 @XmlRootElement(name = "category")
+@Table(name="category")
 public class Category extends AbstractEntity<Integer> {
 	private static final long serialVersionUID = 5709707193151272208L;
 	private String name;

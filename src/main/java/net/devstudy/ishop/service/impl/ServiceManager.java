@@ -11,6 +11,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.devstudy.framework.factory.JDBCRepositoryFactory;
 import net.devstudy.framework.factory.JDBCTransactionalServiceFactory;
 import net.devstudy.ishop.repository.AccountRepository;
 import net.devstudy.ishop.repository.CategoryRepository;
@@ -18,12 +19,6 @@ import net.devstudy.ishop.repository.OrderItemRepository;
 import net.devstudy.ishop.repository.OrderRepository;
 import net.devstudy.ishop.repository.ProducerRepository;
 import net.devstudy.ishop.repository.ProductRepository;
-import net.devstudy.ishop.repository.impl.AccountRepositoryImpl;
-import net.devstudy.ishop.repository.impl.CategoryRepositoryImpl;
-import net.devstudy.ishop.repository.impl.OrderItemRepositoryImpl;
-import net.devstudy.ishop.repository.impl.OrderRepositoryImpl;
-import net.devstudy.ishop.repository.impl.ProducerRepositoryImpl;
-import net.devstudy.ishop.repository.impl.ProductRepositoryImpl;
 import net.devstudy.ishop.service.OrderService;
 import net.devstudy.ishop.service.ProductService;
 import net.devstudy.ishop.service.SocialService;
@@ -85,12 +80,12 @@ public class ServiceManager {
 		loadApplicationProperties();
 		dataSource = createDataSource();
 		
-		productRepository = new ProductRepositoryImpl();
-		producerRepository = new ProducerRepositoryImpl();
-		categoryRepository = new CategoryRepositoryImpl();
-		accountRepository = new AccountRepositoryImpl();
-		orderRepository = new OrderRepositoryImpl();
-		orderItemRepository = new OrderItemRepositoryImpl();
+		productRepository = JDBCRepositoryFactory.createRepository(ProductRepository.class);
+		producerRepository = JDBCRepositoryFactory.createRepository(ProducerRepository.class);
+		categoryRepository = JDBCRepositoryFactory.createRepository(CategoryRepository.class);
+		accountRepository = JDBCRepositoryFactory.createRepository(AccountRepository.class);
+		orderRepository = JDBCRepositoryFactory.createRepository(OrderRepository.class);
+		orderItemRepository = JDBCRepositoryFactory.createRepository(OrderItemRepository.class);
 		
 		productService = (ProductService) JDBCTransactionalServiceFactory.createTransactionalService(dataSource, new ProductServiceImpl(this)) ;
 		orderService = (OrderService) JDBCTransactionalServiceFactory.createTransactionalService(dataSource, new OrderServiceImpl(this));

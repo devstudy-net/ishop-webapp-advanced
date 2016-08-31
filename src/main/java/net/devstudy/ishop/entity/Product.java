@@ -3,12 +3,14 @@ package net.devstudy.ishop.entity;
 import java.math.BigDecimal;
 
 import net.devstudy.framework.annotation.jdbc.Column;
+import net.devstudy.framework.annotation.jdbc.Table;
 
 /**
  * 
  * @author devstudy
  * @see http://devstudy.net
  */
+@Table(name="product")
 public class Product extends AbstractEntity<Integer> {
 	private static final long serialVersionUID = -1126801453251616206L;
 	private String name;

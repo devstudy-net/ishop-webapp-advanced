@@ -33,13 +33,13 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public List<Product> listAllProducts(int page, int limit) {
 		int offset = (page - 1) * limit;
-		return productRepository.listAllProducts(offset, limit);
+		return productRepository.listAllProducts(limit, offset);
 	}
 
 	@Override
 	public List<Product> listProductsByCategory(String categoryUrl, int page, int limit) {
 		int offset = (page - 1) * limit;
-		return productRepository.listProductsByCategory(categoryUrl, offset, limit);
+		return productRepository.listProductsByCategory(categoryUrl, limit, offset);
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	public List<Product> listProductsBySearchForm(SearchForm searchForm, int page, int limit) {
 		int offset = (page - 1) * limit;
-		return productRepository.listProductsBySearchForm(searchForm, offset, limit);
+		return productRepository.listProductsBySearchForm(searchForm, limit, offset);
 	}
 
 	@Override

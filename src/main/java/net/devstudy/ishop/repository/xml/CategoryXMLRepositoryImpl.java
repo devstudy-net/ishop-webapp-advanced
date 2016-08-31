@@ -42,6 +42,7 @@ public class CategoryXMLRepositoryImpl implements CategoryRepository {
 		public List<Category> getCategory() {
 			return category;
 		}
+		@SuppressWarnings("unused")
 		public void setCategory(List<Category> category) {
 			this.category = category;
 		}

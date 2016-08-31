@@ -1,6 +1,7 @@
 package net.devstudy.ishop.entity;
 
 import net.devstudy.framework.annotation.jdbc.Column;
+import net.devstudy.framework.annotation.jdbc.Table;
 import net.devstudy.ishop.model.CurrentAccount;
 
 /**
@@ -8,6 +9,7 @@ import net.devstudy.ishop.model.CurrentAccount;
  * @author devstudy
  * @see http://devstudy.net
  */
+@Table(name="account", nextIdExpression="nextval('account_seq')")
 public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 	private static final long serialVersionUID = -3196229925974576545L;
 	private String name;

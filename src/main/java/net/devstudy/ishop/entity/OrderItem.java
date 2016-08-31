@@ -2,17 +2,19 @@ package net.devstudy.ishop.entity;
 
 import net.devstudy.framework.annotation.jdbc.Child;
 import net.devstudy.framework.annotation.jdbc.Column;
+import net.devstudy.framework.annotation.jdbc.Table;
 
 /**
  * 
  * @author devstudy
  * @see http://devstudy.net
  */
+@Table(name="order_item", nextIdExpression="nextval('order_item_seq')")
 public class OrderItem extends AbstractEntity<Long>{
 	private static final long serialVersionUID = -365373848626193474L;
 	@Column("id_order")
 	private Long idOrder;
-	@Child(columnName="pid")
+	@Child(columnName="id_product")
 	private Product product;
 	private Integer count;
 

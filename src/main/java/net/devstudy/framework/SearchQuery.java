@@ -1,4 +1,4 @@
-package net.devstudy.ishop.jdbc;
+package net.devstudy.framework;
 
 import java.util.List;
 

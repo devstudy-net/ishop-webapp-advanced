@@ -196,7 +196,7 @@ public class OrderServiceImpl implements OrderService {
 	@Transactional
 	public List<Order> listMyOrders(CurrentAccount currentAccount, int page, int limit) {
 		int offset = (page - 1) * limit;
-		return orderRepository.listMyOrders(currentAccount.getId(), offset, limit);
+		return orderRepository.listMyOrders(currentAccount.getId(), limit, offset);
 	}
 
 	@Override
