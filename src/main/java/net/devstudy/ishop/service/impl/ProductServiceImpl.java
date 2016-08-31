@@ -2,6 +2,8 @@ package net.devstudy.ishop.service.impl;
 
 import java.util.List;
 
+import net.devstudy.framework.annotation.Autowired;
+import net.devstudy.framework.annotation.Component;
 import net.devstudy.framework.annotation.jdbc.Transactional;
 import net.devstudy.ishop.entity.Category;
 import net.devstudy.ishop.entity.Producer;
@@ -18,17 +20,14 @@ import net.devstudy.ishop.service.ProductService;
  * @see http://devstudy.net
  */
 @Transactional
+@Component
 public class ProductServiceImpl implements ProductService {
-	private final ProductRepository productRepository;
-	private final ProducerRepository producerRepository;
-	private final CategoryRepository categoryRepository;
-	
-	public ProductServiceImpl(ServiceManager serviceManager) {
-		super();
-		this.productRepository = serviceManager.productRepository;
-		this.producerRepository = serviceManager.producerRepository;
-		this.categoryRepository = serviceManager.categoryRepository;
-	}
+	@Autowired
+	private ProductRepository productRepository;
+	@Autowired
+	private ProducerRepository producerRepository;
+	@Autowired
+	private CategoryRepository categoryRepository;
 
 	@Override
 	public List<Product> listAllProducts(int page, int limit) {

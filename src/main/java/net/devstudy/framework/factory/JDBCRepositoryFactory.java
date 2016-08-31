@@ -13,10 +13,10 @@ import net.devstudy.framework.annotation.jdbc.Select;
  * @author devstudy
  * @see http://devstudy.net
  */
-public final class JDBCRepositoryFactory {
+final class JDBCRepositoryFactory {
 
 	@SuppressWarnings("unchecked")
-	public static <T> T createRepository(Class<T> interfaceClass) {
+	static <T> T createRepository(Class<T> interfaceClass) {
 		return (T) Proxy.newProxyInstance(JDBCRepositoryFactory.class.getClassLoader(), new Class[] { interfaceClass },
 				new JDBCRepositoryInvocationHandler(interfaceClass));
 	}

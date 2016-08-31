@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.devstudy.framework.annotation.jdbc.CollectionItem;
 import net.devstudy.framework.annotation.jdbc.Insert;
+import net.devstudy.framework.annotation.jdbc.JDBCRepository;
 import net.devstudy.framework.annotation.jdbc.Select;
 import net.devstudy.ishop.entity.Order;
 
@@ -12,6 +13,7 @@ import net.devstudy.ishop.entity.Order;
  * @author devstudy
  * @see http://devstudy.net
  */
+@JDBCRepository
 public interface OrderRepository {
 
 	@Insert

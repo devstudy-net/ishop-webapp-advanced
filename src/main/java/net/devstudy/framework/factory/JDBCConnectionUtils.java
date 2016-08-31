@@ -9,13 +9,13 @@ import net.devstudy.framework.FrameworkSystemException;
  * @author devstudy
  * @see http://devstudy.net
  */
-public final class JDBCConnectionUtils {
+final class JDBCConnectionUtils {
 	private JDBCConnectionUtils() {
 	}
 
 	private static final ThreadLocal<Connection> connections = new ThreadLocal<Connection>();
 
-	public static Connection getCurrentConnection() {
+	static Connection getCurrentConnection() {
 		Connection c = connections.get();
 		if (c == null) {
 			throw new FrameworkSystemException(
