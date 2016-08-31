@@ -1,5 +1,8 @@
 package net.devstudy.ishop.entity;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import net.devstudy.framework.annotation.jdbc.Column;
 
 /**
@@ -7,6 +10,7 @@ import net.devstudy.framework.annotation.jdbc.Column;
  * @author devstudy
  * @see http://devstudy.net
  */
+@XmlRootElement(name = "category")
 public class Category extends AbstractEntity<Integer> {
 	private static final long serialVersionUID = 5709707193151272208L;
 	private String name;
@@ -22,6 +26,7 @@ public class Category extends AbstractEntity<Integer> {
 		return name;
 	}
 
+	@XmlAttribute
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -30,6 +35,7 @@ public class Category extends AbstractEntity<Integer> {
 		return url;
 	}
 
+	@XmlAttribute
 	public void setUrl(String url) {
 		this.url = url;
 	}
@@ -38,8 +44,15 @@ public class Category extends AbstractEntity<Integer> {
 		return productCount;
 	}
 
+	@XmlAttribute(name="product-count")
 	public void setProductCount(Integer productCount) {
 		this.productCount = productCount;
+	}
+	
+	@XmlAttribute
+	@Override
+	public void setId(Integer id) {
+		super.setId(id);
 	}
 
 	@Override

@@ -19,10 +19,11 @@ public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 		super();
 	}
 
-	public Account(String name, String email) {
+	public Account(String name, String email, String avatarUrl) {
 		super();
 		this.name = name;
 		this.email = email;
+		this.avatarUrl = avatarUrl;
 	}
 
 	public String getName() {

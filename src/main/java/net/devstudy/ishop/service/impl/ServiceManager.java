@@ -12,6 +12,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.devstudy.framework.factory.JDBCTransactionalServiceFactory;
+import net.devstudy.ishop.repository.AccountRepository;
+import net.devstudy.ishop.repository.CategoryRepository;
+import net.devstudy.ishop.repository.OrderItemRepository;
+import net.devstudy.ishop.repository.OrderRepository;
+import net.devstudy.ishop.repository.ProducerRepository;
+import net.devstudy.ishop.repository.ProductRepository;
+import net.devstudy.ishop.repository.impl.AccountRepositoryImpl;
+import net.devstudy.ishop.repository.impl.CategoryRepositoryImpl;
+import net.devstudy.ishop.repository.impl.OrderItemRepositoryImpl;
+import net.devstudy.ishop.repository.impl.OrderRepositoryImpl;
+import net.devstudy.ishop.repository.impl.ProducerRepositoryImpl;
+import net.devstudy.ishop.repository.impl.ProductRepositoryImpl;
 import net.devstudy.ishop.service.OrderService;
 import net.devstudy.ishop.service.ProductService;
 import net.devstudy.ishop.service.SocialService;
@@ -56,15 +68,31 @@ public class ServiceManager {
 		}
 	}
 
-	private final Properties applicationProperties = new Properties();
-	private final BasicDataSource dataSource;
-	private final ProductService productService;
-	private final OrderService orderService;
-	private final SocialService socialService;
+	final Properties applicationProperties = new Properties();
+	final BasicDataSource dataSource;
+	final ProductRepository productRepository;
+	final ProducerRepository producerRepository;
+	final CategoryRepository categoryRepository;
+	final AccountRepository accountRepository;
+	final OrderItemRepository orderItemRepository;
+	final OrderRepository orderRepository;
+	
+	final ProductService productService;
+	final OrderService orderService;
+	final SocialService socialService;
+	
 	private ServiceManager(ServletContext context) {
 		loadApplicationProperties();
 		dataSource = createDataSource();
-		productService = (ProductService) JDBCTransactionalServiceFactory.createTransactionalService(dataSource, new ProductServiceImpl());
+		
+		productRepository = new ProductRepositoryImpl();
+		producerRepository = new ProducerRepositoryImpl();
+		categoryRepository = new CategoryRepositoryImpl();
+		accountRepository = new AccountRepositoryImpl();
+		orderRepository = new OrderRepositoryImpl();
+		orderItemRepository = new OrderItemRepositoryImpl();
+		
+		productService = (ProductService) JDBCTransactionalServiceFactory.createTransactionalService(dataSource, new ProductServiceImpl(this)) ;
 		orderService = (OrderService) JDBCTransactionalServiceFactory.createTransactionalService(dataSource, new OrderServiceImpl(this));
 		socialService = new FacebookSocialService(this);
 	}

@@ -7,8 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,11 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.devstudy.framework.annotation.jdbc.Transactional;
-import net.devstudy.framework.factory.JDBCConnectionUtils;
-import net.devstudy.framework.handler.DefaultListResultSetHandler;
-import net.devstudy.framework.handler.DefaultUniqueResultSetHandler;
-import net.devstudy.framework.handler.IntResultSetHandler;
-import net.devstudy.framework.handler.ResultSetHandler;
 import net.devstudy.ishop.entity.Account;
 import net.devstudy.ishop.entity.Order;
 import net.devstudy.ishop.entity.OrderItem;
@@ -31,11 +24,14 @@ import net.devstudy.ishop.exception.AccessDeniedException;
 import net.devstudy.ishop.exception.InternalServerErrorException;
 import net.devstudy.ishop.exception.ResourceNotFoundException;
 import net.devstudy.ishop.form.ProductForm;
-import net.devstudy.ishop.jdbc.JDBCUtils;
 import net.devstudy.ishop.model.CurrentAccount;
 import net.devstudy.ishop.model.ShoppingCart;
 import net.devstudy.ishop.model.ShoppingCartItem;
 import net.devstudy.ishop.model.SocialAccount;
+import net.devstudy.ishop.repository.AccountRepository;
+import net.devstudy.ishop.repository.OrderItemRepository;
+import net.devstudy.ishop.repository.OrderRepository;
+import net.devstudy.ishop.repository.ProductRepository;
 import net.devstudy.ishop.service.OrderService;
 
 /**
@@ -45,12 +41,10 @@ import net.devstudy.ishop.service.OrderService;
  */
 public class OrderServiceImpl implements OrderService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
-	private final ResultSetHandler<Product> productResultSetHandler = new DefaultUniqueResultSetHandler<>(Product.class);
-	private final ResultSetHandler<Account> accountResultSetHandler = new DefaultUniqueResultSetHandler<>(Account.class);
-	private final ResultSetHandler<Order> orderResultSetHandler = new DefaultUniqueResultSetHandler<>(Order.class);
-	private final ResultSetHandler<List<OrderItem>> orderItemListResultSetHandler = new DefaultListResultSetHandler<>(OrderItem.class);
-	private final ResultSetHandler<List<Order>> ordersResultSetHandler = new DefaultListResultSetHandler<>(Order.class);
-	private final ResultSetHandler<Integer> countResultSetHandler = new IntResultSetHandler();
+	private final AccountRepository accountRepository;
+	private final OrderItemRepository orderItemRepository;
+	private final OrderRepository orderRepository;
+	private final ProductRepository productRepository;
 
 	private final String rootDir;
 
@@ -71,17 +65,19 @@ public class OrderServiceImpl implements OrderService {
 		this.smtpPassword = serviceManager.getApplicationProperty("email.smtp.password");
 		this.host = serviceManager.getApplicationProperty("app.host");
 		this.fromAddress = serviceManager.getApplicationProperty("email.smtp.fromAddress");
+		
+		this.accountRepository = serviceManager.accountRepository;
+		this.orderItemRepository = serviceManager.orderItemRepository;
+		this.orderRepository = serviceManager.orderRepository;
+		this.productRepository = serviceManager.productRepository;
 	}
 
 	@Override
 	@Transactional
 	public void addProductToShoppingCart(ProductForm productForm, ShoppingCart shoppingCart) {
-		Product product = JDBCUtils.select(JDBCConnectionUtils.getCurrentConnection(),
-				"select p.*, c.name as category, pr.name as producer from product p, producer pr, category c "
-						+ "where c.id=p.id_category and pr.id=p.id_producer and p.id=?",
-				productResultSetHandler, productForm.getIdProduct());
-		if (product == null) {
-			throw new InternalServerErrorException("Product not found by id=" + productForm.getIdProduct());
+		Product product = productRepository.findById(productForm.getIdProduct());
+		if(product == null) {
+			throw new InternalServerErrorException("Product not found by id="+productForm.getIdProduct());
 		}
 		shoppingCart.addProduct(product, productForm.getCount());
 	}
@@ -125,15 +121,13 @@ public class OrderServiceImpl implements OrderService {
 	@Transactional(readOnly=false)
 	public CurrentAccount authentificate(SocialAccount socialAccount) {
 		try{
-			Account account = JDBCUtils.select(JDBCConnectionUtils.getCurrentConnection(), 
-					"select * from account where email=?", accountResultSetHandler, socialAccount.getEmail());
+			Account account = accountRepository.findByEmail(socialAccount.getEmail());
 			if (account == null) {
 				String uniqFileName = UUID.randomUUID().toString() + ".jpg";
 				Path filePathToSave = Paths.get(rootDir + "/" + uniqFileName);
 				downloadAvatar(socialAccount.getAvatarUrl(), filePathToSave);
-				account = JDBCUtils.insert(JDBCConnectionUtils.getCurrentConnection(), 
-						"insert into account values (nextval('account_seq'),?,?,?)",
-						accountResultSetHandler, socialAccount.getName(), socialAccount.getEmail(), "/media/avatar/" + uniqFileName);
+				account = new Account(socialAccount.getName(), socialAccount.getEmail(), "/media/avatar/" + uniqFileName);
+				accountRepository.create(account);
 			}
 			return account;
 		} catch (IOException e) {
@@ -150,15 +144,20 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	@Transactional(readOnly=false)
 	public long makeOrder(ShoppingCart shoppingCart, CurrentAccount currentAccount) {
+		validateShoppingCart(shoppingCart);
+		Order order = new Order(currentAccount.getId(), new Timestamp(System.currentTimeMillis()));
+		orderRepository.create(order);
+		for (ShoppingCartItem item : shoppingCart.getItems()) {
+			orderItemRepository.create(new OrderItem(order.getId(), item.getProduct(), item.getCount()));
+		}
+		sendEmail(currentAccount.getEmail(), order);
+		return order.getId();
+	}
+	
+	private void validateShoppingCart (ShoppingCart shoppingCart) {
 		if (shoppingCart == null || shoppingCart.getItems().isEmpty()) {
 			throw new InternalServerErrorException("shoppingCart is null or empty");
 		}
-		Order order = JDBCUtils.insert(JDBCConnectionUtils.getCurrentConnection(), "insert into \"order\" values(nextval('order_seq'),?,?)",
-				orderResultSetHandler, currentAccount.getId(), new Timestamp(System.currentTimeMillis()));
-		JDBCUtils.insertBatch(JDBCConnectionUtils.getCurrentConnection(), "insert into order_item values(nextval('order_item_seq'),?,?,?)",
-				toOrderItemParameterList(order.getId(), shoppingCart.getItems()));
-		sendEmail(currentAccount.getEmail(), order);
-		return order.getId();
 	}
 
 	private void sendEmail(String emailAddress, Order order) {
@@ -179,31 +178,17 @@ public class OrderServiceImpl implements OrderService {
 		}
 	}
 
-	private List<Object[]> toOrderItemParameterList(long idOrder, Collection<ShoppingCartItem> items) {
-		List<Object[]> parametersList = new ArrayList<>();
-		for (ShoppingCartItem item : items) {
-			parametersList.add(new Object[] { idOrder, item.getProduct().getId(), item.getCount() });
-		}
-		return parametersList;
-	}
-
 	@Override
 	@Transactional
 	public Order findOrderById(long id, CurrentAccount currentAccount) {
-		Order order = JDBCUtils.select(JDBCConnectionUtils.getCurrentConnection(), 
-					"select * from \"order\" where id=?", orderResultSetHandler, id);
+		Order order = orderRepository.findById(id);
 		if (order == null) {
 			throw new ResourceNotFoundException("Order not found by id: " + id);
 		}
 		if (!order.getIdAccount().equals(currentAccount.getId())) {
-			throw new AccessDeniedException(
-					"Account with id=" + currentAccount.getId() + " is not owner for order with id=" + id);
+			throw new AccessDeniedException("Account with id=" + currentAccount.getId() + " is not owner for order with id=" + id);
 		}
-		List<OrderItem> list = JDBCUtils.select(JDBCConnectionUtils.getCurrentConnection(),
-				"select o.id, o.id_order as id_order, o.id_product, o.count, p.id as pid, p.name, p.description, p.price, p.image_link, c.name as category, pr.name as producer from order_item o, product p, category c, producer pr "
-						+ "where pr.id=p.id_producer and c.id=p.id_category and o.id_product=p.id and o.id_order=?",
-				orderItemListResultSetHandler, id);
-		order.setItems(list);
+		order.setItems(orderItemRepository.findByIdOrder(id));
 		return order;
 	}
 
@@ -211,16 +196,12 @@ public class OrderServiceImpl implements OrderService {
 	@Transactional
 	public List<Order> listMyOrders(CurrentAccount currentAccount, int page, int limit) {
 		int offset = (page - 1) * limit;
-		List<Order> orders = JDBCUtils.select(JDBCConnectionUtils.getCurrentConnection(),
-				"select * from \"order\" where id_account=? order by id desc limit ? offset ?",
-				ordersResultSetHandler, currentAccount.getId(), limit, offset);
-		return orders;
+		return orderRepository.listMyOrders(currentAccount.getId(), offset, limit);
 	}
 
 	@Override
 	@Transactional
 	public int countMyOrders(CurrentAccount currentAccount) {
-		return JDBCUtils.select(JDBCConnectionUtils.getCurrentConnection(), 
-				"select count(*) from \"order\" where id_account=?", countResultSetHandler, currentAccount.getId());
+		return orderRepository.countMyOrders(currentAccount.getId());
 	}
 }
