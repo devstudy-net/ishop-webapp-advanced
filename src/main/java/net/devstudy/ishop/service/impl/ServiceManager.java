@@ -40,7 +40,12 @@ public class ServiceManager {
 		return socialService;
 	}
 	public String getApplicationProperty(String key) {
-		return applicationProperties.getProperty(key);
+		String value = applicationProperties.getProperty(key);
+		if(value.startsWith("${sysEnv.")) {
+			String keyVal = value.replace("${sysEnv.", "").replace("}", "");
+			value = System.getProperty(keyVal);
+		}
+		return value;
 	}
 	public void close() {
 		try {
@@ -59,7 +64,7 @@ public class ServiceManager {
 		loadApplicationProperties();
 		dataSource = createDataSource();
 		productService = new ProductServiceImpl(dataSource);
-		orderService = new OrderServiceImpl(dataSource);
+		orderService = new OrderServiceImpl(dataSource, this);
 		socialService = new FacebookSocialService(this);
 	}
 	

@@ -11,6 +11,7 @@ public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 	private static final long serialVersionUID = -3196229925974576545L;
 	private String name;
 	private String email;
+	private String avatarUrl;
 
 	public Account() {
 		super();
@@ -41,6 +42,14 @@ public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 	@Override
 	public String getDescription() {
 		return name + "("+email+")";
+	}
+
+	public String getAvatarUrl() {
+		return avatarUrl;
+	}
+
+	public void setAvatarUrl(String avatarUrl) {
+		this.avatarUrl = avatarUrl;
 	}
 
 	@Override

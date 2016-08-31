@@ -29,6 +29,7 @@
 			<c:choose>
 				<c:when test="${CURRENT_ACCOUNT != null }">
 					<ul class="nav navbar-nav navbar-right">
+						<li><img src="${CURRENT_ACCOUNT.avatarUrl }" class="avatar"></li>
 						<li><a>Welcome ${CURRENT_ACCOUNT.description }</a></li>
 						<li><a href="/my-orders">My orders</a></li>
 						<li><a href="javascript:void(0);" class="post-request" data-url="/sign-out">Sign out</a></li>
