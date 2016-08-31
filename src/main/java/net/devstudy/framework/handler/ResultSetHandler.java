@@ -1,4 +1,4 @@
-package net.devstudy.ishop.jdbc;
+package net.devstudy.framework.handler;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

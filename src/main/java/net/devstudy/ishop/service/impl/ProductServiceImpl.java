@@ -10,14 +10,15 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.devstudy.framework.handler.DefaultListResultSetHandler;
+import net.devstudy.framework.handler.IntResultSetHandler;
+import net.devstudy.framework.handler.ResultSetHandler;
 import net.devstudy.ishop.entity.Category;
 import net.devstudy.ishop.entity.Producer;
 import net.devstudy.ishop.entity.Product;
 import net.devstudy.ishop.exception.InternalServerErrorException;
 import net.devstudy.ishop.form.SearchForm;
 import net.devstudy.ishop.jdbc.JDBCUtils;
-import net.devstudy.ishop.jdbc.ResultSetHandler;
-import net.devstudy.ishop.jdbc.ResultSetHandlerFactory;
 import net.devstudy.ishop.jdbc.SearchQuery;
 import net.devstudy.ishop.service.ProductService;
 
@@ -28,16 +29,13 @@ import net.devstudy.ishop.service.ProductService;
  */
 class ProductServiceImpl implements ProductService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ProductServiceImpl.class);
-	private static final ResultSetHandler<List<Product>> productsResultSetHandler = 
-			ResultSetHandlerFactory.getListResultSetHandler(ResultSetHandlerFactory.PRODUCT_RESULT_SET_HANDLER);
-	private final ResultSetHandler<List<Category>> categoryListResultSetHandler = 
-			ResultSetHandlerFactory.getListResultSetHandler(ResultSetHandlerFactory.CATEGORY_RESULT_SET_HANDLER);
-	private final ResultSetHandler<List<Producer>> producerListResultSetHandler = 
-			ResultSetHandlerFactory.getListResultSetHandler(ResultSetHandlerFactory.PRODUCER_RESULT_SET_HANDLER);
-	private final ResultSetHandler<Integer> countResultSetHandler = ResultSetHandlerFactory.getCountResultSetHandler();
-	
+	private final ResultSetHandler<List<Product>> productsResultSetHandler = new DefaultListResultSetHandler<>(Product.class);
+	private final ResultSetHandler<List<Category>> categoryListResultSetHandler = new DefaultListResultSetHandler<>(Category.class);
+	private final ResultSetHandler<List<Producer>> producerListResultSetHandler = new DefaultListResultSetHandler<>(Producer.class);
+	private final ResultSetHandler<Integer> countResultSetHandler = new IntResultSetHandler();
+
 	private final DataSource dataSource;
-	
+
 	public ProductServiceImpl(DataSource dataSource) {
 		super();
 		this.dataSource = dataSource;
@@ -47,8 +45,10 @@ class ProductServiceImpl implements ProductService {
 	public List<Product> listAllProducts(int page, int limit) {
 		try (Connection c = dataSource.getConnection()) {
 			int offset = (page - 1) * limit;
-			return JDBCUtils.select(c, "select p.*, c.name as category, pr.name as producer from product p, producer pr, category c "
-					+ "where c.id=p.id_category and pr.id=p.id_producer limit ? offset ?", productsResultSetHandler, limit, offset);
+			return JDBCUtils.select(c,
+					"select p.*, c.name as category, pr.name as producer from product p, producer pr, category c "
+							+ "where c.id=p.id_category and pr.id=p.id_producer limit ? offset ?",
+					productsResultSetHandler, limit, offset);
 		} catch (SQLException e) {
 			throw new InternalServerErrorException("Can't execute sql query: " + e.getMessage(), e);
 		}
@@ -83,7 +83,7 @@ class ProductServiceImpl implements ProductService {
 			throw new InternalServerErrorException("Can't execute sql query: " + e.getMessage(), e);
 		}
 	}
-	
+
 	@Override
 	public int countAllProducts() {
 		try (Connection c = dataSource.getConnection()) {
@@ -92,16 +92,18 @@ class ProductServiceImpl implements ProductService {
 			throw new InternalServerErrorException("Can't execute sql query: " + e.getMessage(), e);
 		}
 	}
-	
+
 	@Override
 	public int countProductsByCategory(String categoryUrl) {
 		try (Connection c = dataSource.getConnection()) {
-			return JDBCUtils.select(c, "select count(p.*) from product p, category c where c.id=p.id_category and c.url=?", countResultSetHandler, categoryUrl);
+			return JDBCUtils.select(c,
+					"select count(p.*) from product p, category c where c.id=p.id_category and c.url=?",
+					countResultSetHandler, categoryUrl);
 		} catch (SQLException e) {
 			throw new InternalServerErrorException("Can't execute sql query: " + e.getMessage(), e);
 		}
 	}
-	
+
 	@Override
 	public List<Product> listProductsBySearchForm(SearchForm form, int page, int limit) {
 		try (Connection c = dataSource.getConnection()) {
@@ -120,7 +122,8 @@ class ProductServiceImpl implements ProductService {
 	protected SearchQuery buildSearchQuery(String selectFields, SearchForm form) {
 		List<Object> params = new ArrayList<>();
 		StringBuilder sql = new StringBuilder("select ");
-		sql.append(selectFields).append(" from product p, category c, producer pr where pr.id=p.id_producer and c.id=p.id_category and (p.name ilike ? or p.description ilike ?)");
+		sql.append(selectFields).append(
+				" from product p, category c, producer pr where pr.id=p.id_producer and c.id=p.id_category and (p.name ilike ? or p.description ilike ?)");
 		params.add("%" + form.getQuery() + "%");
 		params.add("%" + form.getQuery() + "%");
 		JDBCUtils.populateSqlAndParams(sql, params, form.getCategories(), "c.id = ?");

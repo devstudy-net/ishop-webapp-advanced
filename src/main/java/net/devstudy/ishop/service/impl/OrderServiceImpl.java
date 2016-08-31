@@ -21,6 +21,10 @@ import org.apache.commons.mail.SimpleEmail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.devstudy.framework.handler.DefaultListResultSetHandler;
+import net.devstudy.framework.handler.DefaultUniqueResultSetHandler;
+import net.devstudy.framework.handler.IntResultSetHandler;
+import net.devstudy.framework.handler.ResultSetHandler;
 import net.devstudy.ishop.entity.Account;
 import net.devstudy.ishop.entity.Order;
 import net.devstudy.ishop.entity.OrderItem;
@@ -30,8 +34,6 @@ import net.devstudy.ishop.exception.InternalServerErrorException;
 import net.devstudy.ishop.exception.ResourceNotFoundException;
 import net.devstudy.ishop.form.ProductForm;
 import net.devstudy.ishop.jdbc.JDBCUtils;
-import net.devstudy.ishop.jdbc.ResultSetHandler;
-import net.devstudy.ishop.jdbc.ResultSetHandlerFactory;
 import net.devstudy.ishop.model.CurrentAccount;
 import net.devstudy.ishop.model.ShoppingCart;
 import net.devstudy.ishop.model.ShoppingCartItem;
@@ -45,17 +47,12 @@ import net.devstudy.ishop.service.OrderService;
  */
 class OrderServiceImpl implements OrderService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
-	private static final ResultSetHandler<Product> productResultSetHandler = ResultSetHandlerFactory
-			.getSingleResultSetHandler(ResultSetHandlerFactory.PRODUCT_RESULT_SET_HANDLER);
-	private static final ResultSetHandler<Account> accountResultSetHandler = ResultSetHandlerFactory
-			.getSingleResultSetHandler(ResultSetHandlerFactory.ACCOUNT_RESULT_SET_HANDLER);
-	private final ResultSetHandler<Order> orderResultSetHandler = ResultSetHandlerFactory
-			.getSingleResultSetHandler(ResultSetHandlerFactory.ORDER_RESULT_SET_HANDLER);
-	private final ResultSetHandler<List<OrderItem>> orderItemListResultSetHandler = ResultSetHandlerFactory
-			.getListResultSetHandler(ResultSetHandlerFactory.ORDER_ITEM_RESULT_SET_HANDLER);
-	private final ResultSetHandler<List<Order>> ordersResultSetHandler = ResultSetHandlerFactory
-			.getListResultSetHandler(ResultSetHandlerFactory.ORDER_RESULT_SET_HANDLER);
-	private final ResultSetHandler<Integer> countResultSetHandler = ResultSetHandlerFactory.getCountResultSetHandler();
+	private final ResultSetHandler<Product> productResultSetHandler = new DefaultUniqueResultSetHandler<>(Product.class);
+	private final ResultSetHandler<Account> accountResultSetHandler = new DefaultUniqueResultSetHandler<>(Account.class);
+	private final ResultSetHandler<Order> orderResultSetHandler = new DefaultUniqueResultSetHandler<>(Order.class);
+	private final ResultSetHandler<List<OrderItem>> orderItemListResultSetHandler = new DefaultListResultSetHandler<>(OrderItem.class);
+	private final ResultSetHandler<List<Order>> ordersResultSetHandler = new DefaultListResultSetHandler<>(Order.class);
+	private final ResultSetHandler<Integer> countResultSetHandler = new IntResultSetHandler();
 
 	private final DataSource dataSource;
 	private final String rootDir;
@@ -214,7 +211,7 @@ class OrderServiceImpl implements OrderService {
 						"Account with id=" + currentAccount.getId() + " is not owner for order with id=" + id);
 			}
 			List<OrderItem> list = JDBCUtils.select(c,
-					"select o.id as oid, o.id_order as id_order, o.id_product, o.count, p.*, c.name as category, pr.name as producer from order_item o, product p, category c, producer pr "
+					"select o.id, o.id_order as id_order, o.id_product, o.count, p.id as pid, p.name, p.description, p.price, p.image_link, c.name as category, pr.name as producer from order_item o, product p, category c, producer pr "
 							+ "where pr.id=p.id_producer and c.id=p.id_category and o.id_product=p.id and o.id_order=?",
 					orderItemListResultSetHandler, id);
 			order.setItems(list);

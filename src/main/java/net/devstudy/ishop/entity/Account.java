@@ -1,5 +1,6 @@
 package net.devstudy.ishop.entity;
 
+import net.devstudy.framework.annotation.jdbc.Column;
 import net.devstudy.ishop.model.CurrentAccount;
 
 /**
@@ -11,6 +12,7 @@ public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 	private static final long serialVersionUID = -3196229925974576545L;
 	private String name;
 	private String email;
+	@Column("avatar_url")
 	private String avatarUrl;
 
 	public Account() {

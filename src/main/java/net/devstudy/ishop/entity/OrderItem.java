@@ -1,5 +1,8 @@
 package net.devstudy.ishop.entity;
 
+import net.devstudy.framework.annotation.jdbc.Child;
+import net.devstudy.framework.annotation.jdbc.Column;
+
 /**
  * 
  * @author devstudy
@@ -7,9 +10,11 @@ package net.devstudy.ishop.entity;
  */
 public class OrderItem extends AbstractEntity<Long>{
 	private static final long serialVersionUID = -365373848626193474L;
+	@Column("id_order")
 	private Long idOrder;
+	@Child(columnName="pid")
 	private Product product;
-	private int count;
+	private Integer count;
 
 	public OrderItem(Product product, int count) {
 		super();
@@ -37,11 +42,11 @@ public class OrderItem extends AbstractEntity<Long>{
 		this.product = product;
 	}
 
-	public int getCount() {
+	public Integer getCount() {
 		return count;
 	}
 
-	public void setCount(int count) {
+	public void setCount(Integer count) {
 		this.count = count;
 	}
 

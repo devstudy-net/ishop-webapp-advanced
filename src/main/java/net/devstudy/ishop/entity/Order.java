@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import net.devstudy.framework.annotation.jdbc.Column;
+import net.devstudy.framework.annotation.jdbc.Transient;
+
 /**
  * 
  * @author devstudy
@@ -11,7 +14,9 @@ import java.util.List;
  */
 public class Order extends AbstractEntity<Long>{
 	private static final long serialVersionUID = 3026083684140455633L;
+	@Column("id_account")
 	private Integer idAccount;
+	@Transient
 	private List<OrderItem> items;
 	private Timestamp created;
 

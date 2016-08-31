@@ -1,5 +1,7 @@
 package net.devstudy.ishop.entity;
 
+import net.devstudy.framework.annotation.jdbc.Column;
+
 /**
  * 
  * @author devstudy
@@ -9,7 +11,12 @@ public class Category extends AbstractEntity<Integer> {
 	private static final long serialVersionUID = 5709707193151272208L;
 	private String name;
 	private String url;
+	@Column("product_count")
 	private Integer productCount;
+
+	public Category() {
+		super();
+	}
 
 	public String getName() {
 		return name;

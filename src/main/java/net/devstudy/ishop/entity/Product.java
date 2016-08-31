@@ -2,6 +2,8 @@ package net.devstudy.ishop.entity;
 
 import java.math.BigDecimal;
 
+import net.devstudy.framework.annotation.jdbc.Column;
+
 /**
  * 
  * @author devstudy
@@ -11,10 +13,15 @@ public class Product extends AbstractEntity<Integer> {
 	private static final long serialVersionUID = -1126801453251616206L;
 	private String name;
 	private String description;
+	@Column("image_link")
 	private String imageLink;
 	private BigDecimal price;
 	private String category;
 	private String producer;
+
+	public Product() {
+		super();
+	}
 
 	public String getName() {
 		return name;

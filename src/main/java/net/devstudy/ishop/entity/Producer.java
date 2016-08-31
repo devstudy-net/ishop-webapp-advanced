@@ -1,4 +1,7 @@
 package net.devstudy.ishop.entity;
+
+import net.devstudy.framework.annotation.jdbc.Column;
+
 /**
  * 
  * @author devstudy
@@ -7,17 +10,22 @@ package net.devstudy.ishop.entity;
 public class Producer extends AbstractEntity<Integer> {
 	private static final long serialVersionUID = -4967160259057526492L;
 	private String name;
-	private int productCount;
+	@Column("product_count")
+	private Integer productCount;
+	
+	public Producer() {
+		super();
+	}
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	public int getProductCount() {
+	public Integer getProductCount() {
 		return productCount;
 	}
-	public void setProductCount(int productCount) {
+	public void setProductCount(Integer productCount) {
 		this.productCount = productCount;
 	}
 }
