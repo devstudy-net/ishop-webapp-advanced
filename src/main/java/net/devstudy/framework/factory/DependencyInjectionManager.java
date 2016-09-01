@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URL;
@@ -52,9 +53,8 @@ public class DependencyInjectionManager {
 			for (Class<?> classObject : classes) {
 				Object instance = createInstance(classObject);
 				if (instance != null) {
-					for (Class<?> inrefaceClass : getKeysForInstance(classObject)) {
-						instances.put(inrefaceClass, instance);
-						LOGGER.info("Added {}.class = {}", inrefaceClass.getSimpleName(), toStringInstance(instance));
+					for (Class<?> interfaceClass : getKeysForInstance(classObject)) {
+						putInstance(interfaceClass, instance);
 					}
 				}
 			}
@@ -85,7 +85,19 @@ public class DependencyInjectionManager {
 	}
 
 	public void destroyInstances() {
+		for (Object instance : instances.values()) {
+			destroyInstance(instance);
+		}
 		instances.clear();
+	}
+	
+	protected void putInstance(Class<?> interfaceClass, Object instance) {
+		Object oldInstance = instances.put(interfaceClass, instance);
+		if(oldInstance != null){
+			throw new FrameworkSystemException("Detected two instances for interfaceKey: interface="+
+					interfaceClass+", instance1="+toStringInstance(instance)+", instance2="+toStringInstance(oldInstance));
+		};
+		LOGGER.info("Added {}.class = {}", interfaceClass.getSimpleName(), toStringInstance(instance));
 	}
 
 	protected Class<?>[] getKeysForInstance(Class<?> classObject) {
@@ -123,7 +135,9 @@ public class DependencyInjectionManager {
 				return realInstance;
 			}
 		} catch (InstantiationException e) {
-			throw new FrameworkSystemException("Can't instantiate class: " + classObject + "! Does it have default constructor without parameter?", e);
+			throw new FrameworkSystemException(
+					"Can't instantiate class: " + classObject + "! Does it have default constructor without parameter?",
+					e);
 		}
 	}
 
@@ -145,7 +159,7 @@ public class DependencyInjectionManager {
 			injectValueDependency(field, instance);
 		}
 	}
-	
+
 	protected String toStringInstance(Object instance) {
 		return Proxy.isProxyClass(instance.getClass()) ? instance.toString() : instance.getClass().getSimpleName();
 	}
@@ -155,10 +169,12 @@ public class DependencyInjectionManager {
 		if (autowired != null) {
 			Object dependency = instances.get(field.getType());
 			if (dependency == null) {
-				throw new FrameworkSystemException("Can't inject dependency: field=" + field + " from class=" + field.getType());
+				throw new FrameworkSystemException(
+						"Can't inject dependency: field=" + field + " from class=" + field.getType());
 			}
 			field.set(instance, dependency);
-			LOGGER.info("Depenedency {}.{} injected by instance {}", field.getDeclaringClass().getSimpleName(), field.getName(), toStringInstance(dependency));
+			LOGGER.info("Depenedency {}.{} injected by instance {}", field.getDeclaringClass().getSimpleName(),
+					field.getName(), toStringInstance(dependency));
 		}
 	}
 
@@ -176,7 +192,8 @@ public class DependencyInjectionManager {
 			}
 			field.set(instance, propertyValue);
 			String loggerPropValue = isSystemProperty ? "${" + key + "}" : propertyValue;
-			LOGGER.info("Value {}.{} injected by property {}", field.getDeclaringClass().getSimpleName(), field.getName(), loggerPropValue);
+			LOGGER.info("Value {}.{} injected by property {}", field.getDeclaringClass().getSimpleName(),
+					field.getName(), loggerPropValue);
 		}
 	}
 
@@ -222,6 +239,21 @@ public class DependencyInjectionManager {
 				}
 			}
 			return false;
+		}
+	}
+
+	protected void destroyInstance(Object instance) {
+		Method[] methods = instance.getClass().getDeclaredMethods();
+		for (Method method : methods) {
+			if (method.getName().equals("close") && method.getParameterCount() == 0) {
+				LOGGER.info("Invoke close method from class {}", instance.getClass().getSimpleName());
+				try {
+					method.setAccessible(true);
+					method.invoke(instance);
+				} catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
+					LOGGER.error("Invoke close method failed: " + e.getMessage(), e);
+				}
+			}
 		}
 	}
 }
