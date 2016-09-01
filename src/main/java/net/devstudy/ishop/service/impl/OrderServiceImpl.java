@@ -29,6 +29,7 @@ import net.devstudy.ishop.repository.OrderRepository;
 import net.devstudy.ishop.repository.ProductRepository;
 import net.devstudy.ishop.service.AvatarService;
 import net.devstudy.ishop.service.CookieService;
+import net.devstudy.ishop.service.NotificationContentBuilderService;
 import net.devstudy.ishop.service.NotificationService;
 import net.devstudy.ishop.service.OrderService;
 
@@ -55,6 +56,8 @@ public class OrderServiceImpl implements OrderService {
 	private CookieService cookieService;
 	@Autowired
 	private NotificationService notificationService;
+	@Autowired
+	private NotificationContentBuilderService notificationContentBuilderService;
 
 	@Override
 	@Transactional
@@ -115,7 +118,8 @@ public class OrderServiceImpl implements OrderService {
 		TransactionSynchronizationManager.addSynchronization(new TransactionSynchronization() {
 			@Override
 			public void afterCommit() {
-				notificationService.sendNewOrderCreatedNotification(currentAccount.getEmail(), order);
+				String content = notificationContentBuilderService.buildNewOrderCreatedNotificationMessage(order);
+				notificationService.sendNotificationMessage(currentAccount.getEmail(), content);
 			}
 		});
 		return order.getId();
@@ -138,7 +142,7 @@ public class OrderServiceImpl implements OrderService {
 			throw new AccessDeniedException(
 					"Account with id=" + currentAccount.getId() + " is not owner for order with id=" + id);
 		}
-		order.setItems(orderItemRepository.findByIdOrder(id));
+		//order.setItems(orderItemRepository.findByIdOrder(id));
 		return order;
 	}
 

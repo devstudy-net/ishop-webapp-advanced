@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import net.devstudy.framework.annotation.Component;
 import net.devstudy.framework.annotation.Value;
-import net.devstudy.ishop.entity.Order;
 import net.devstudy.ishop.service.NotificationService;
 
 /**
@@ -34,8 +33,6 @@ public class AsyncEmailNotificationService implements NotificationService {
 	private String smtpPassword;
 	@Value("email.smtp.fromAddress")
 	private String fromEmail;
-	@Value("app.host")
-	private String host;
 	@Value("email.smtp.tryCount")
 	private String tryCount;
 
@@ -43,13 +40,8 @@ public class AsyncEmailNotificationService implements NotificationService {
 		executorService = Executors.newCachedThreadPool();
 	}
 
-	protected String buildNotificationMessage(Order order) {
-		return host + "/order?id=" + order.getId();
-	}
-
 	@Override
-	public void sendNewOrderCreatedNotification(String notificationAddress, Order order) {
-		String content = buildNotificationMessage(order);
+	public void sendNotificationMessage(String notificationAddress, String content) {
 		executorService.submit(new EmailItem(notificationAddress, "New order", content, Integer.parseInt(tryCount)));
 	}
 

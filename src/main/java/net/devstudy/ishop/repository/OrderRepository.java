@@ -7,6 +7,7 @@ import net.devstudy.framework.annotation.jdbc.Insert;
 import net.devstudy.framework.annotation.jdbc.JDBCRepository;
 import net.devstudy.framework.annotation.jdbc.Select;
 import net.devstudy.ishop.entity.Order;
+import net.devstudy.ishop.repository.handler.OrderResultSetHandler;
 
 /**
  * 
@@ -19,7 +20,10 @@ public interface OrderRepository {
 	@Insert
 	void create(Order order);
 	
-	@Select("select * from \"order\" where id=?")
+	@Select(value="select ord.created, ord.id_account, o.id as oid, o.id_order as id_order, o.id_product, o.count, p.*, c.name as "
+			+ "category, pr.name as producer from \"order\" ord, order_item o, product p, category c, producer pr where pr.id=p.id_producer "
+			+ "and c.id=p.id_category and o.id_product=p.id and o.id_order=? and o.id_order=ord.id",
+			resultSetHandlerClass=OrderResultSetHandler.class)
 	Order findById(Long id);
 	
 	@Select("select * from \"order\" where id_account=? order by id desc limit ? offset ?")
