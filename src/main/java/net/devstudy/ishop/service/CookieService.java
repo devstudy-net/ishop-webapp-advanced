@@ -14,6 +14,6 @@ import net.devstudy.ishop.model.ShoppingCartItem;
 public interface CookieService {
 
 	String createShoppingCartCookie(Collection<ShoppingCartItem> items);
-
+	
 	List<ProductForm> parseShoppingCartCookie(String cookieValue);
 }

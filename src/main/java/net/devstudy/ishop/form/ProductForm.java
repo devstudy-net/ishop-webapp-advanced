@@ -28,4 +28,8 @@ public class ProductForm {
 	public void setCount(Integer count) {
 		this.count = count;
 	}
+	@Override
+	public String toString() {
+		return String.format("ProductForm [idProduct=%s, count=%s]", idProduct, count);
+	}
 }

@@ -2,27 +2,50 @@ package net.devstudy.ishop.entity;
 
 import java.math.BigDecimal;
 
-import net.devstudy.framework.annotation.jdbc.Column;
-import net.devstudy.framework.annotation.jdbc.Table;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * 
  * @author devstudy
  * @see http://devstudy.net
  */
-@Table(name="product")
+@Entity
+@Table(name = "product")
 public class Product extends AbstractEntity<Integer> {
 	private static final long serialVersionUID = -1126801453251616206L;
+
+	@Id
+	private Integer id;
 	private String name;
 	private String description;
-	@Column("image_link")
+	@Column(name = "image_link")
 	private String imageLink;
 	private BigDecimal price;
-	private String category;
-	private String producer;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "id_category", nullable = false)
+	private Category category;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "id_producer", nullable = false)
+	private Producer producer;
 
 	public Product() {
 		super();
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -58,18 +81,18 @@ public class Product extends AbstractEntity<Integer> {
 	}
 
 	public String getCategory() {
-		return category;
+		return category.getName();
 	}
 
-	public void setCategory(String category) {
+	public void setCategory(Category category) {
 		this.category = category;
 	}
 
 	public String getProducer() {
-		return producer;
+		return producer.getName();
 	}
 
-	public void setProducer(String producer) {
+	public void setProducer(Producer producer) {
 		this.producer = producer;
 	}
 

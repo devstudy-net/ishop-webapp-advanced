@@ -1,7 +1,7 @@
 package net.devstudy.ishop.service.impl;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import net.devstudy.framework.annotation.Component;
-import net.devstudy.framework.annotation.Value;
 import net.devstudy.ishop.entity.Order;
 import net.devstudy.ishop.service.NotificationContentBuilderService;
 
@@ -13,7 +13,7 @@ import net.devstudy.ishop.service.NotificationContentBuilderService;
 @Component
 public class NotificationContentBuilderServiceImpl implements NotificationContentBuilderService {
 
-	@Value("app.host")
+	@Value("${app.host}")
 	private String host;
 	
 	@Override

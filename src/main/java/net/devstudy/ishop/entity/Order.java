@@ -4,19 +4,30 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import net.devstudy.framework.annotation.jdbc.Column;
-import net.devstudy.framework.annotation.jdbc.Table;
-import net.devstudy.framework.annotation.jdbc.Transient;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * 
  * @author devstudy
  * @see http://devstudy.net
  */
-@Table(name="\"order\"", nextIdExpression="nextval('order_seq')")
-public class Order extends AbstractEntity<Long>{
+@Entity
+@Table(name = "\"order\"")
+public class Order extends AbstractEntity<Long> {
 	private static final long serialVersionUID = 3026083684140455633L;
-	@Column("id_account")
+
+	@Id
+	@SequenceGenerator(name = "order_seq_generator", sequenceName = "order_seq", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_seq_generator")
+	private Long id;
+	@Column(name = "id_account")
 	private Integer idAccount;
 	@Transient
 	private List<OrderItem> items;
@@ -30,6 +41,14 @@ public class Order extends AbstractEntity<Long>{
 		super();
 		this.idAccount = idAccount;
 		this.created = created;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public Integer getIdAccount() {

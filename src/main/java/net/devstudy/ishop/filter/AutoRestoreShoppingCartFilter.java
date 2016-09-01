@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.devstudy.ishop.model.ShoppingCart;
 import net.devstudy.ishop.service.OrderService;
-import net.devstudy.ishop.service.impl.ServiceManager;
 import net.devstudy.ishop.util.SessionUtils;
+import net.devstudy.ishop.util.SpringUtils;
 
 /**
  * 
@@ -28,7 +28,7 @@ public class AutoRestoreShoppingCartFilter extends AbstractFilter {
 	
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		orderService = ServiceManager.getInstance(filterConfig.getServletContext()).getOrderService();
+		orderService = SpringUtils.getInstance(filterConfig.getServletContext(), OrderService.class);
 	}
 	
 	@Override

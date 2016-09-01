@@ -1,5 +1,8 @@
 package net.devstudy.ishop.service.impl;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.FacebookClient.AccessToken;
@@ -9,8 +12,6 @@ import com.restfb.scope.ExtendedPermissions;
 import com.restfb.scope.ScopeBuilder;
 import com.restfb.types.User;
 
-import net.devstudy.framework.annotation.Component;
-import net.devstudy.framework.annotation.Value;
 import net.devstudy.ishop.model.SocialAccount;
 import net.devstudy.ishop.service.SocialService;
 
@@ -19,18 +20,19 @@ import net.devstudy.ishop.service.SocialService;
  * @author devstudy
  * @see http://devstudy.net
  */
-@Component
+@Service
 public class FacebookSocialService implements SocialService {
-	@Value("social.facebook.idClient")
+	
+	@Value("${social.facebook.idClient}")
 	private String idClient;
 	
-	@Value("social.facebook.secret")
+	@Value("${social.facebook.secret}")
 	private String secret;
 	
-	@Value("app.host")
+	@Value("${app.host}")
 	private String host;
 	
-	private String getRedirectUrl(){
+	private String getRedirectUrl() {
 		return host + "/from-social";
 	}
 
@@ -48,7 +50,9 @@ public class FacebookSocialService implements SocialService {
 		AccessToken accessToken = client.obtainUserAccessToken(idClient, secret, getRedirectUrl(), authToken);
 		client = new DefaultFacebookClient(accessToken.getAccessToken(), Version.VERSION_2_5);
 		User user = client.fetchObject("me", User.class, Parameter.with("fields", "name,email,first_name,last_name"));
+		// https://developers.facebook.com/docs/graph-api/reference/user/picture/
 		String avatarUrl = String.format("https://graph.facebook.com/v2.7/%s/picture?type=small", user.getId());
+		System.out.println(avatarUrl);
 		return new SocialAccount(user.getFirstName(), user.getEmail(), avatarUrl);
 	}
 }

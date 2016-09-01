@@ -1,16 +1,22 @@
 package net.devstudy.ishop.service.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.mail.DefaultAuthenticator;
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.SimpleEmail;
+import javax.annotation.PreDestroy;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMailMessage;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Service;
 
-import net.devstudy.framework.annotation.Component;
-import net.devstudy.framework.annotation.Value;
 import net.devstudy.ishop.service.NotificationService;
 
 /**
@@ -18,22 +24,18 @@ import net.devstudy.ishop.service.NotificationService;
  * @author devstudy
  * @see http://devstudy.net
  */
-@Component
+@Service
 public class AsyncEmailNotificationService implements NotificationService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AsyncEmailNotificationService.class);
 	private final ExecutorService executorService;
-
-	@Value("email.smtp.server")
-	private String smtpHost;
-	@Value("email.smtp.port")
-	private String smtpPort;
-	@Value("email.smtp.username")
-	private String smtpUsername;
-	@Value("email.smtp.password")
-	private String smtpPassword;
-	@Value("email.smtp.fromAddress")
+	
+	@Autowired
+	private JavaMailSender javaMailSender;
+	
+	@Value("email.smtp.fromEmail")
 	private String fromEmail;
-	@Value("email.smtp.tryCount")
+	
+	@Value("${email.smtp.tryCount}")
 	private String tryCount;
 
 	public AsyncEmailNotificationService() {
@@ -45,10 +47,17 @@ public class AsyncEmailNotificationService implements NotificationService {
 		executorService.submit(new EmailItem(notificationAddress, "New order", content, Integer.parseInt(tryCount)));
 	}
 
+	@PreDestroy
 	public void close() {
 		executorService.shutdown();
 	}
 
+	/**
+	 * 
+	 * 
+	 * @author devstudy
+	 * @see http://devstudy.net
+	 */
 	private class EmailItem implements Runnable {
 		private final String emailAddress;
 		private final String subject;
@@ -56,6 +65,7 @@ public class AsyncEmailNotificationService implements NotificationService {
 		private int tryCount;
 
 		private EmailItem(String emailAddress, String subject, String content, int tryCount) {
+			super();
 			this.emailAddress = emailAddress;
 			this.subject = subject;
 			this.content = content;
@@ -66,20 +76,12 @@ public class AsyncEmailNotificationService implements NotificationService {
 			return tryCount > 0;
 		}
 
+		@Override
 		public void run() {
 			try {
-				SimpleEmail email = new SimpleEmail();
-				email.setCharset("utf-8");
-				email.setHostName(smtpHost);
-				email.setSSLOnConnect(true);
-				email.setSslSmtpPort(smtpPort);
-				email.setAuthenticator(new DefaultAuthenticator(smtpUsername, smtpPassword));
-				email.setFrom(fromEmail);
-				email.setSubject(subject);
-				email.setMsg(content);
-				email.addTo(emailAddress);
-				email.send();
-			} catch (EmailException e) {
+				MimeMailMessage msg = buildMessage(subject, content, emailAddress);
+				javaMailSender.send(msg.getMimeMessage());
+			} catch (Exception e) {
 				LOGGER.error("Can't send email: " + e.getMessage(), e);
 				tryCount--;
 				if (isValidTryCount()) {
@@ -88,9 +90,16 @@ public class AsyncEmailNotificationService implements NotificationService {
 				} else {
 					LOGGER.error("Email was not sent: limit of try count");
 				}
-			} catch (Exception e) {
-				LOGGER.error("Error during send email: " + e.getMessage(), e);
 			}
+		}
+		
+		protected MimeMailMessage buildMessage(String subject, String content, String email) throws MessagingException, UnsupportedEncodingException{
+			MimeMessageHelper message = new MimeMessageHelper(javaMailSender.createMimeMessage(), false);
+			message.setSubject(subject);
+			message.setTo(new InternetAddress(email, ""));
+			message.setFrom(fromEmail, "");
+			message.setText(content);
+			return new MimeMailMessage(message);
 		}
 	}
 }

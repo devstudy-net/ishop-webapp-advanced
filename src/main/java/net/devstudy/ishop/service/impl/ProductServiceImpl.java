@@ -2,9 +2,12 @@ package net.devstudy.ishop.service.impl;
 
 import java.util.List;
 
-import net.devstudy.framework.annotation.Autowired;
-import net.devstudy.framework.annotation.Component;
-import net.devstudy.framework.annotation.jdbc.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import net.devstudy.ishop.entity.Category;
 import net.devstudy.ishop.entity.Producer;
 import net.devstudy.ishop.entity.Product;
@@ -20,51 +23,51 @@ import net.devstudy.ishop.service.ProductService;
  * @see http://devstudy.net
  */
 @Transactional
-@Component
+@Service
 public class ProductServiceImpl implements ProductService {
+	
 	@Autowired
 	private ProductRepository productRepository;
+	
 	@Autowired
 	private ProducerRepository producerRepository;
+	
 	@Autowired
 	private CategoryRepository categoryRepository;
 
 	@Override
 	public List<Product> listAllProducts(int page, int limit) {
-		int offset = (page - 1) * limit;
-		return productRepository.listAllProducts(limit, offset);
+		return productRepository.findAll(new PageRequest(page - 1, limit)).getContent();
 	}
 
 	@Override
 	public List<Product> listProductsByCategory(String categoryUrl, int page, int limit) {
-		int offset = (page - 1) * limit;
-		return productRepository.listProductsByCategory(categoryUrl, limit, offset);
+		return productRepository.findByCategoryUrl(categoryUrl, new PageRequest(page - 1, limit));
 	}
 
 	@Override
 	public List<Category> listAllCategories() {
-		return categoryRepository.listAllCategories();
+		return categoryRepository.findAll(new Sort("id"));
 	}
 
 	@Override
 	public List<Producer> listAllProducers() {
-		return producerRepository.listAllProducers();
+		return producerRepository.findAll(new Sort("name"));
 	}
 	
 	@Override
 	public int countAllProducts() {
-		return productRepository.countAllProducts();
+		return (int)productRepository.count();
 	}
 	
 	@Override
 	public int countProductsByCategory(String categoryUrl) {
-		return productRepository.countProductsByCategory(categoryUrl);
+		return productRepository.countByCategoryUrl(categoryUrl);
 	}
 	
 	@Override
 	public List<Product> listProductsBySearchForm(SearchForm searchForm, int page, int limit) {
-		int offset = (page - 1) * limit;
-		return productRepository.listProductsBySearchForm(searchForm, limit, offset);
+		return productRepository.listProductsBySearchForm(searchForm, new PageRequest(page - 1, limit));
 	}
 
 	@Override

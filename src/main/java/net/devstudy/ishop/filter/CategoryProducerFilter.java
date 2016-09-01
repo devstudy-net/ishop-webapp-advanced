@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.devstudy.ishop.Constants;
 import net.devstudy.ishop.service.ProductService;
-import net.devstudy.ishop.service.impl.ServiceManager;
+import net.devstudy.ishop.util.SpringUtils;
 
 /**
  * Example !!!! This filter is not working, because @WebFilter annotation is absent
@@ -24,7 +24,7 @@ public class CategoryProducerFilter extends AbstractFilter {
 	
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		productService = ServiceManager.getInstance(filterConfig.getServletContext()).getProductService();
+		productService = SpringUtils.getInstance(filterConfig.getServletContext(), ProductService.class);
 	}
 	
 	@Override

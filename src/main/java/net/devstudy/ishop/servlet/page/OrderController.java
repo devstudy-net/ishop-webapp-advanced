@@ -25,11 +25,15 @@ public class OrderController extends AbstractController {
 	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		ShoppingCart shoppingCart = SessionUtils.getCurrentShoppingCart(req);
-		long idOrder = getOrderService().makeOrder(shoppingCart, SessionUtils.getCurrentAccount(req));
-		SessionUtils.clearCurrentShoppingCart(req, resp);
-		req.getSession().setAttribute(CURRENT_MESSAGE, "Order created successfully. Please wait for our reply.");
-		RoutingUtils.redirect("/order?id=" + idOrder, req, resp);
+		if(SessionUtils.isCurrentShoppingCartCreated(req)) {
+			ShoppingCart shoppingCart = SessionUtils.getCurrentShoppingCart(req);
+			long idOrder = getOrderService().makeOrder(shoppingCart, SessionUtils.getCurrentAccount(req));
+			SessionUtils.clearCurrentShoppingCart(req, resp);
+			req.getSession().setAttribute(CURRENT_MESSAGE, "Order created successfully. Please wait for our reply.");
+			RoutingUtils.redirect("/order?id=" + idOrder, req, resp);
+		} else {
+			RoutingUtils.redirect("/products", req, resp);
+		}
 	}
 	
 	@Override

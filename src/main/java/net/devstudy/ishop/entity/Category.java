@@ -1,34 +1,43 @@
 package net.devstudy.ishop.entity;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-
-import net.devstudy.framework.annotation.jdbc.Column;
-import net.devstudy.framework.annotation.jdbc.Table;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 /**
  * 
  * @author devstudy
  * @see http://devstudy.net
  */
-@XmlRootElement(name = "category")
-@Table(name="category")
+@Entity
+@Table(name = "category")
 public class Category extends AbstractEntity<Integer> {
 	private static final long serialVersionUID = 5709707193151272208L;
+
+	@Id
+	private Integer id;
 	private String name;
 	private String url;
-	@Column("product_count")
+	@Column(name = "product_count")
 	private Integer productCount;
 
 	public Category() {
 		super();
 	}
 
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
 	public String getName() {
 		return name;
 	}
 
-	@XmlAttribute
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -37,7 +46,6 @@ public class Category extends AbstractEntity<Integer> {
 		return url;
 	}
 
-	@XmlAttribute
 	public void setUrl(String url) {
 		this.url = url;
 	}
@@ -46,15 +54,8 @@ public class Category extends AbstractEntity<Integer> {
 		return productCount;
 	}
 
-	@XmlAttribute(name="product-count")
 	public void setProductCount(Integer productCount) {
 		this.productCount = productCount;
-	}
-	
-	@XmlAttribute
-	@Override
-	public void setId(Integer id) {
-		super.setId(id);
 	}
 
 	@Override

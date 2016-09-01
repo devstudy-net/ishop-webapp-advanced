@@ -1,22 +1,40 @@
 package net.devstudy.ishop.entity;
 
-import net.devstudy.framework.annotation.jdbc.Child;
-import net.devstudy.framework.annotation.jdbc.Column;
-import net.devstudy.framework.annotation.jdbc.Table;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
 /**
  * 
  * @author devstudy
  * @see http://devstudy.net
  */
-@Table(name="order_item", nextIdExpression="nextval('order_item_seq')")
-public class OrderItem extends AbstractEntity<Long>{
+@Entity
+@Table(name = "order_item")
+public class OrderItem extends AbstractEntity<Long> {
 	private static final long serialVersionUID = -365373848626193474L;
-	@Column("id_order")
+
+	@Id
+	@SequenceGenerator(name = "order_item_seq_generator", sequenceName = "order_item_seq", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_item_seq_generator")
+	private Long id;
+	@Column(name = "id_order")
 	private Long idOrder;
-	@Child(columnName="id_product")
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "id_product", nullable = false)
 	private Product product;
 	private Integer count;
+
+	public OrderItem() {
+		super();
+	}
 
 	public OrderItem(Long idOrder, Product product, Integer count) {
 		super();
@@ -25,8 +43,12 @@ public class OrderItem extends AbstractEntity<Long>{
 		this.count = count;
 	}
 
-	public OrderItem() {
-		super();
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public Long getIdOrder() {

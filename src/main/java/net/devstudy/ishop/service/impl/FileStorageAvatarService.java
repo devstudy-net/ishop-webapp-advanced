@@ -8,8 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-import net.devstudy.framework.annotation.Component;
-import net.devstudy.framework.annotation.Value;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
 import net.devstudy.ishop.exception.InternalServerErrorException;
 import net.devstudy.ishop.service.AvatarService;
 
@@ -18,29 +19,30 @@ import net.devstudy.ishop.service.AvatarService;
  * @author devstudy
  * @see http://devstudy.net
  */
-@Component
+@Service
 public class FileStorageAvatarService implements AvatarService {
-	@Value("app.avatar.root.dir")
+	
+	@Value("${app.avatar.root.dir}")
 	private String rootDir;
-
+	
 	@Override
 	public String processAvatarLink(String avatarUrlFromSocialNetwork) {
 		try {
 			String uniqFileName = generateUniqFileName();
-			Path filePathToSave = Paths.get(rootDir + "/" + uniqFileName);
+			Path filePathToSave = Paths.get(rootDir+"/"+uniqFileName);
 			downloadAvatar(avatarUrlFromSocialNetwork, filePathToSave);
-			return "/media/avatar/" + uniqFileName;
+			return "/media/avatar/"+uniqFileName;
 		} catch (IOException e) {
 			throw new InternalServerErrorException("Can't process avatar link", e);
 		}
 	}
 
-	protected String generateUniqFileName() {
-		return UUID.randomUUID().toString() + ".jpg";
+	protected String generateUniqFileName(){
+		return UUID.randomUUID().toString()+".jpg";
 	}
-
+	
 	protected void downloadAvatar(String avatarUrl, Path filePathToSave) throws IOException {
-		try (InputStream in = new URL(avatarUrl).openStream()) {
+		try(InputStream in = new URL(avatarUrl).openStream()) {
 			Files.copy(in, filePathToSave);
 		}
 	}

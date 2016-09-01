@@ -12,7 +12,7 @@ import net.devstudy.ishop.form.SearchForm;
 import net.devstudy.ishop.service.OrderService;
 import net.devstudy.ishop.service.ProductService;
 import net.devstudy.ishop.service.SocialService;
-import net.devstudy.ishop.service.impl.ServiceManager;
+import net.devstudy.ishop.util.SpringUtils;
 
 /**
  * 
@@ -28,9 +28,9 @@ public abstract class AbstractController extends HttpServlet {
 
 	@Override
 	public final void init() throws ServletException {
-		productService = ServiceManager.getInstance(getServletContext()).getProductService();
-		orderService =  ServiceManager.getInstance(getServletContext()).getOrderService();
-		socialService = ServiceManager.getInstance(getServletContext()).getSocialService();
+		productService = SpringUtils.getInstance(getServletContext(), ProductService.class);
+		orderService =  SpringUtils.getInstance(getServletContext(), OrderService.class);
+		socialService = SpringUtils.getInstance(getServletContext(), SocialService.class);
 	}
 
 	public final ProductService getProductService() {

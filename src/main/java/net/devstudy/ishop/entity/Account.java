@@ -1,7 +1,13 @@
 package net.devstudy.ishop.entity;
 
-import net.devstudy.framework.annotation.jdbc.Column;
-import net.devstudy.framework.annotation.jdbc.Table;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+
 import net.devstudy.ishop.model.CurrentAccount;
 
 /**
@@ -9,12 +15,18 @@ import net.devstudy.ishop.model.CurrentAccount;
  * @author devstudy
  * @see http://devstudy.net
  */
-@Table(name="account", nextIdExpression="nextval('account_seq')")
+@Entity
+@Table(name = "account")
 public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 	private static final long serialVersionUID = -3196229925974576545L;
+
+	@Id
+	@SequenceGenerator(name = "account_seq_generator", sequenceName = "account_seq", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_seq_generator")
+	private Integer id;
 	private String name;
 	private String email;
-	@Column("avatar_url")
+	@Column(name = "avatar_url")
 	private String avatarUrl;
 
 	public Account() {
@@ -26,6 +38,14 @@ public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 		this.name = name;
 		this.email = email;
 		this.avatarUrl = avatarUrl;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -43,11 +63,6 @@ public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	
-	@Override
-	public String getDescription() {
-		return name + "("+email+")";
-	}
 
 	public String getAvatarUrl() {
 		return avatarUrl;
@@ -55,6 +70,11 @@ public class Account extends AbstractEntity<Integer> implements CurrentAccount {
 
 	public void setAvatarUrl(String avatarUrl) {
 		this.avatarUrl = avatarUrl;
+	}
+
+	@Override
+	public String getDescription() {
+		return name + "(" + email + ")";
 	}
 
 	@Override
