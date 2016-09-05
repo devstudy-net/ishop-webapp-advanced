@@ -22,7 +22,7 @@ import net.devstudy.ishop.service.ProductService;
  * @author devstudy
  * @see http://devstudy.net
  */
-@Transactional
+@Transactional(readOnly=true)
 @Service
 public class ProductServiceImpl implements ProductService {
 	

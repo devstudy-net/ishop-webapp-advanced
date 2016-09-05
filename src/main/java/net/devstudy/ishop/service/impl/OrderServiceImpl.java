@@ -69,7 +69,7 @@ public class OrderServiceImpl implements OrderService {
 	private NotificationContentBuilderService notificationContentBuilderService;
 	
 	@Override
-	@Transactional
+	@Transactional(readOnly=true)
 	public void addProductToShoppingCart(ProductForm productForm, ShoppingCart shoppingCart) {
 		Product product = productRepository.findById(productForm.getIdProduct());
 		if(product == null) {
@@ -89,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(readOnly=true)
 	public ShoppingCart deserializeShoppingCart(String cookieValue) {
 		List<ProductForm> products = cookieService.parseShoppingCartCookie(cookieValue);
 		ShoppingCart shoppingCart = new ShoppingCart();
@@ -104,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 	
 	@Override
-	@Transactional(readOnly=false)
+	@Transactional
 	public CurrentAccount authentificate(SocialAccount socialAccount) {
 		Account account = accountRepository.findByEmail(socialAccount.getEmail());
 		if (account == null) {
@@ -116,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 	
 	@Override
-	@Transactional(readOnly=false)
+	@Transactional
 	public long makeOrder(ShoppingCart shoppingCart, final CurrentAccount currentAccount) {
 		if (shoppingCart == null || shoppingCart.getItems().isEmpty()) {
 			throw new InternalServerErrorException("shoppingCart is null or empty");
@@ -140,7 +140,7 @@ public class OrderServiceImpl implements OrderService {
 	}
 	
 	@Override
-	@Transactional
+	@Transactional(readOnly=true)
 	public Order findOrderById(long id, CurrentAccount currentAccount) {
 		Order order = orderRepository.findById(id);
 		if (order == null) {
@@ -154,13 +154,13 @@ public class OrderServiceImpl implements OrderService {
 	}
 	
 	@Override
-	@Transactional
+	@Transactional(readOnly=true)
 	public List<Order> listMyOrders(CurrentAccount currentAccount, int page, int limit) {
 		return orderRepository.findByIdAccount(currentAccount.getId(), new PageRequest(page - 1, limit));
 	}
 	
 	@Override
-	@Transactional
+	@Transactional(readOnly=true)
 	public int countMyOrders(CurrentAccount currentAccount) {
 		return orderRepository.countByIdAccount(currentAccount.getId());
 	}
