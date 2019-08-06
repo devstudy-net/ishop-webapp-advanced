@@ -44,7 +44,7 @@ login
 2. При клонировании и сборки проекта добавлять параметр `-u 1000` после параметра `run`, который запускает docker не от имени `root` пользователя.
 (`1000` - это uid Вашего пользователя)
 
-###### 1. Клонировать github репозиторий в текущую папку используя docker образ devstudy/git:
+###### 1. Клонировать github репозиторий в текущую папку, используя docker образ devstudy/git:
 ~~~~
 docker run -it --rm -v "$PWD":/opt/src/ -w /opt/src devstudy/git git clone "https://github.com/devstudy-net/ishop-webapp-advanced"
 ~~~~
